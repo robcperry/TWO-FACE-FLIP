@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Krark Tracker">
+<title>Krark &amp; Sakashima Tracker</title>
+<style>
+:root {
+  --bg:#f5f5f3;--surface:#ffffff;--surface-2:#f0efed;--border:#e0deda;--border-strong:#c8c5c0;
+  --text:#1a1a18;--text-2:#5a5955;--text-3:#9a9895;
+  --accent:#2563eb;--accent-bg:#eff6ff;--accent-text:#1d4ed8;
+  --success:#16a34a;--success-bg:#f0fdf4;--success-border:#86efac;
+  --warning:#b45309;--warning-bg:#fffbeb;--warning-border:#fcd34d;
+  --danger:#dc2626;--danger-bg:#fef2f2;--danger-border:#fca5a5;
+  --pro:#7c3aed;--pro-bg:#f5f3ff;--radius:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1a18;--surface:#252523;--surface-2:#2e2e2c;--border:#3a3a38;--border-strong:#4a4a48;
+    --text:#f0efed;--text-2:#a8a7a3;--text-3:#68675f;
+    --accent:#60a5fa;--accent-bg:#1e3a5f;--accent-text:#93c5fd;
+    --success:#4ade80;--success-bg:#14532d;--success-border:#166534;
+    --warning:#fbbf24;--warning-bg:#451a03;--warning-border:#92400e;
+    --danger:#f87171;--danger-bg:#450a0a;--danger-border:#991b1b;
+    --pro:#c084fc;--pro-bg:#3b0764;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px;padding-bottom:env(safe-area-inset-bottom);}
+.app{max-width:600px;margin:0 auto;padding:16px;}
+h1{font-size:20px;font-weight:600;margin-bottom:2px;}
+.subtitle{font-size:13px;color:var(--text-2);margin-bottom:20px;}
+.sec-label{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.row:last-child{margin-bottom:0;}
+.row .lbl{font-size:14px;color:var(--text-2);flex:1;}
+.note{font-size:11px;color:var(--text-3);display:block;margin-top:1px;}
+.ctr{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ctr button{width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:300;}
+.ctr button:active{opacity:0.6;}
+.ctr-val{font-size:16px;font-weight:600;color:var(--text);min-width:24px;text-align:center;}
+.tog-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.tog-row:last-child{margin-bottom:0;}
+.tog-row .lbl{font-size:14px;color:var(--text-2);flex:1;}
+.toggle-switch{position:relative;width:44px;height:26px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--border-strong);border-radius:26px;cursor:pointer;transition:background 0.2s;}
+.toggle-switch input:checked+.toggle-track{background:var(--accent);}
+.toggle-track::after{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:white;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.toggle-switch input:checked+.toggle-track::after{transform:translateX(18px);}
+.hr{border:none;border-top:1px solid var(--border);margin:12px 0;}
+.hint{font-size:12px;margin-top:6px;padding:6px 10px;border-radius:var(--radius);}
+.hint.accent{color:var(--accent-text);background:var(--accent-bg);}
+.hint.warning{color:var(--warning);background:var(--warning-bg);}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+.stats-grid-2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;}
+.stat.fire{background:var(--danger-bg);border-color:var(--danger);}
+.stat-lbl{font-size:11px;color:var(--text-3);margin-bottom:3px;}
+.stat.fire .stat-lbl{color:var(--danger);}
+.stat-val{font-size:22px;font-weight:600;color:var(--text);}
+.stat-val.accent{color:var(--accent);}
+.stat-val.danger{color:var(--danger);}
+.stat-val.warning{color:var(--warning);}
+.stat-val.success{color:var(--success);}
+.stat-val.pro{color:var(--pro);}
+.stat.fire .stat-val{color:var(--danger);}
+.stat-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
+.stat.fire .stat-sub{color:var(--danger);font-weight:600;}
+.dmg-board{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.dmg-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.dmg-col-title{font-size:12px;font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.dmg-col-title.global{color:var(--warning);}
+.dmg-col-title.targeted{color:var(--danger);}
+.cb-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.cb-row:last-child{margin-bottom:0;}
+.cb-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;}
+.cb-lbl{font-size:13px;color:var(--text-2);flex:1;}
+.draw-input{width:46px;height:28px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:13px;padding:0 6px;text-align:center;}
+.mult-section{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.mult-title{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.dmg-tally{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.tally-card{border-radius:var(--radius);padding:10px 12px;border:1px solid var(--border);}
+.tally-card.global{background:var(--warning-bg);border-color:var(--warning);}
+.tally-card.targeted{background:var(--danger-bg);border-color:var(--danger);}
+.tally-card.total{background:var(--surface-2);}
+.tally-lbl{font-size:11px;color:var(--text-3);margin-bottom:3px;}
+.tally-card.global .tally-lbl{color:var(--warning);}
+.tally-card.targeted .tally-lbl{color:var(--danger);}
+.tally-val{font-size:20px;font-weight:600;color:var(--text);}
+.tally-card.global .tally-val{color:var(--warning);}
+.tally-card.targeted .tally-val{color:var(--danger);}
+.tally-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
+.spell-input{width:100%;height:44px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-size:15px;padding:0 12px;margin-bottom:10px;}
+.spell-input::placeholder{color:var(--text-3);}
+.cast-btn{width:100%;padding:16px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-size:16px;font-weight:600;cursor:pointer;margin-bottom:10px;}
+.cast-btn:active{opacity:0.7;}
+.ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.ctrl-btn{padding:12px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2);font-size:14px;cursor:pointer;}
+.ctrl-btn:active{opacity:0.7;}
+.resolve-panel{background:var(--accent-bg);border:1px solid var(--accent);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.resolve-title{font-size:14px;font-weight:600;color:var(--accent-text);margin-bottom:6px;}
+.outcome-banner{display:flex;align-items:baseline;gap:8px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:8px 12px;margin-bottom:10px;}
+.outcome-count{font-size:24px;font-weight:600;color:var(--accent-text);}
+.outcome-detail{font-size:12px;color:var(--text-2);flex:1;line-height:1.5;}
+.resolve-subtitle{font-size:12px;color:var(--accent-text);opacity:0.8;margin-bottom:12px;}
+.trigger-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;}
+.trigger-group.is-true-orig{border-color:var(--accent);}
+.trigger-group.is-clone{border-color:var(--success-border);}
+.trigger-group:last-child{margin-bottom:0;}
+.trigger-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;}
+.trigger-label.true-orig{color:var(--accent-text);}
+.trigger-label.clone-trig{color:var(--success);}
+.radio-pair{display:flex;gap:8px;flex-wrap:wrap;}
+.radio-opt{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface-2);cursor:pointer;user-select:none;flex:1;min-width:130px;}
+.radio-opt input[type=radio]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.radio-opt-label{font-size:13px;font-weight:500;color:var(--text-3);}
+.radio-opt.opt-win{border-color:var(--success-border);background:var(--success-bg);}
+.radio-opt.opt-win .radio-opt-label{color:var(--success);}
+.radio-opt.opt-lose{border-color:var(--warning-border);background:var(--warning-bg);}
+.radio-opt.opt-lose .radio-opt-label{color:var(--warning);}
+.resolve-summary{font-size:13px;color:var(--accent-text);margin:12px 0;line-height:1.5;}
+.confirm-btn{width:100%;padding:14px;border-radius:var(--radius);border:1px solid var(--accent);background:var(--surface);color:var(--accent-text);font-size:14px;font-weight:600;cursor:pointer;}
+.confirm-btn:active{opacity:0.7;}
+.log-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow-x:auto;max-height:300px;overflow-y:auto;margin-bottom:32px;}
+.log-table{width:100%;border-collapse:collapse;font-size:12px;}
+.log-table th{font-size:11px;font-weight:600;color:var(--text-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border-strong);white-space:nowrap;position:sticky;top:0;background:var(--surface);}
+.log-table th.r{text-align:right;}
+.log-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-2);}
+.log-table tr:last-child td{border-bottom:none;}
+.log-table td.sc{color:var(--text);font-weight:600;}
+.log-table td.r{text-align:right;}
+.badge{display:inline-block;font-size:11px;border-radius:4px;padding:2px 6px;white-space:nowrap;margin:1px;font-weight:500;}
+.badge.win{background:var(--success-bg);color:var(--success);}
+.badge.lose{background:var(--warning-bg);color:var(--warning);}
+.badge.miss{background:var(--surface-2);color:var(--text-3);}
+.badge.tys{background:var(--accent-bg);color:var(--accent-text);}
+.badge.pw{background:var(--warning-bg);color:var(--warning);}
+.badge.ral{background:var(--danger-bg);color:var(--danger);}
+.badge.kw{background:var(--success-bg);color:var(--success);}
+.badge.gdmg{background:var(--warning-bg);color:var(--warning);}
+.badge.tdmg{background:var(--danger-bg);color:var(--danger);}
+.tbadge{font-size:11px;color:var(--text-3);white-space:nowrap;}
+.empty-log{padding:2rem;text-align:center;font-size:14px;color:var(--text-3);}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Krark &amp; Sakashima</h1>
+  <p class="subtitle">Storm tracker — pick one outcome per trigger</p>
+
+  <div class="sec-label">Krark setup</div>
+  <div class="card">
+    <div class="tog-row">
+      <span class="lbl">Krark, the Thumbless <span class="note">original — loss returns spell to hand</span></span>
+      <label class="toggle-switch"><input type="checkbox" id="tog-krark" checked onchange="updateKrarkUI()"><span class="toggle-track"></span></label>
+    </div>
+    <div id="krark-opts">
+      <div class="hr"></div>
+      <div class="row">
+        <span class="lbl">Sakashima clones <span class="note">each is a Krark — loss also returns to hand</span></span>
+        <div class="ctr">
+          <button onclick="adj('clones',-1)">−</button>
+          <span class="ctr-val" id="clones-val">0</span>
+          <button onclick="adj('clones',1)">+</button>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:0">
+        <span class="lbl">Krark's Thumb <span class="note">flip twice — pick one outcome per trigger</span></span>
+        <div class="ctr">
+          <button onclick="adj('thumbs',-1)">−</button>
+          <span class="ctr-val" id="thumbs-val">0</span>
+          <button onclick="adj('thumbs',1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="row" style="margin-bottom:0">
+      <span class="lbl">Twinning Staff <span class="note">extra copy per Krark win</span></span>
+      <div class="ctr">
+        <button onclick="adj('staff',-1)">−</button>
+        <span class="ctr-val" id="staff-val">0</span>
+        <button onclick="adj('staff',1)">+</button>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="tog-row">
+      <span class="lbl">Thousand-Year Storm <span class="note">adds copies equal to storm count — no flip</span></span>
+      <label class="toggle-switch"><input type="checkbox" id="tog-tys" onchange="updateUI()"><span class="toggle-track"></span></label>
+    </div>
+    <div id="tys-hint" style="display:none" class="hint accent"></div>
+    <div class="hr"></div>
+    <div class="tog-row">
+      <span class="lbl">Primal Wellspring <span class="note">+1 copy per cast (tap) — auto-resets each turn</span></span>
+      <label class="toggle-switch"><input type="checkbox" id="tog-pw" onchange="updatePWUI()"><span class="toggle-track"></span></label>
+    </div>
+    <div id="pw-hint" style="display:none" class="hint warning"></div>
+    <div class="hr"></div>
+    <div class="tog-row">
+      <span class="lbl">Ral Storm Conduit −2 <span class="note">+1 copy on next cast — resets after use</span></span>
+      <label class="toggle-switch"><input type="checkbox" id="tog-ral2" onchange="updateRalUI()"><span class="toggle-track"></span></label>
+    </div>
+    <div id="ral2-hint" style="display:none" class="hint warning"></div>
+    <div class="hr"></div>
+    <div class="tog-row" style="margin-bottom:0">
+      <span class="lbl">Aetherflux Reservoir <span class="note">gain life = storm count per cast</span></span>
+      <label class="toggle-switch"><input type="checkbox" id="tog-af" onchange="updateUI()"><span class="toggle-track"></span></label>
+    </div>
+  </div>
+
+  <div class="sec-label">Damage board</div>
+  <div class="dmg-board">
+    <div class="dmg-cols">
+      <div>
+        <div class="dmg-col-title global">Global — all opponents</div>
+        <label class="cb-row"><input type="checkbox" id="cb-gs" onchange="calcDmg()"><span class="cb-lbl">Guttersnipe <span class="note">2 per cast</span></span></label>
+        <label class="cb-row"><input type="checkbox" id="cb-kf" onchange="calcDmg()"><span class="cb-lbl">Kessig Flamebreather <span class="note">1 per cast</span></span></label>
+        <label class="cb-row"><input type="checkbox" id="cb-ex" onchange="calcDmg()"><span class="cb-lbl">Exalted Flamer <span class="note">1 per cast</span></span></label>
+        <label class="cb-row"><input type="checkbox" id="cb-vv" onchange="calcDmg()"><span class="cb-lbl">Vivi Ornitier <span class="note">1 per cast</span></span></label>
+      </div>
+      <div>
+        <div class="dmg-col-title targeted">Targeted — one player</div>
+        <label class="cb-row"><input type="checkbox" id="cb-ral" onchange="calcDmg()"><span class="cb-lbl">Ral, Storm Conduit <span class="note">1 per copy</span></span></label>
+        <label class="cb-row"><input type="checkbox" id="cb-np" onchange="calcDmg()"><span class="cb-lbl">Niv-Mizzet, Parun <span class="note">1 per cast</span></span></label>
+        <div class="cb-row">
+          <input type="checkbox" id="cb-nf" onchange="calcDmg()">
+          <span class="cb-lbl">Niv-Mizzet, Firemind <span class="note">1 per draw</span></span>
+          <input type="number" id="nf-draws" min="0" max="20" value="1" class="draw-input" onchange="calcDmg()" oninput="calcDmg()">
+        </div>
+      </div>
+    </div>
+    <div class="mult-section">
+      <div class="mult-title">Multipliers</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <label class="cb-row" style="margin-bottom:0"><input type="checkbox" id="cb-tb" onchange="calcDmg()"><span class="cb-lbl">Torbran <span class="note">+2 all red</span></span></label>
+        <label class="cb-row" style="margin-bottom:0"><input type="checkbox" id="cb-fe" onchange="calcDmg()"><span class="cb-lbl">Fiery Emancipation <span class="note">×3 all</span></span></label>
+      </div>
+    </div>
+    <div class="dmg-tally">
+      <div class="tally-card global"><div class="tally-lbl">Global/cast</div><div class="tally-val" id="dmg-gc">0</div><div class="tally-sub">copy: <span id="dmg-gcp">0</span></div></div>
+      <div class="tally-card targeted"><div class="tally-lbl">Target/cast</div><div class="tally-val" id="dmg-tc">0</div><div class="tally-sub">copy: <span id="dmg-tcp">0</span></div></div>
+      <div class="tally-card total"><div class="tally-lbl">Combined/cast</div><div class="tally-val" id="dmg-cc">0</div><div class="tally-sub">copy: <span id="dmg-ccp">0</span></div></div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat"><div class="stat-lbl">Storm</div><div class="stat-val" id="st-storm">0</div></div>
+    <div class="stat"><div class="stat-lbl">Flips won</div><div class="stat-val success" id="st-wins">0/0</div></div>
+    <div class="stat"><div class="stat-lbl">Copies</div><div class="stat-val accent" id="st-copies">0</div></div>
+  </div>
+  <div class="stats-grid-2">
+    <div class="stat"><div class="stat-lbl">To hand</div><div class="stat-val warning" id="st-hand">0</div></div>
+    <div class="stat"><div class="stat-lbl">Est. damage</div><div class="stat-val danger" id="st-dmg">0</div></div>
+    <div class="stat" id="af-stat" style="display:none">
+      <div class="stat-lbl">Life (turn)</div>
+      <div class="stat-val pro" id="st-life">0</div>
+      <div class="stat-sub" id="af-sub">need 50 to fire</div>
+    </div>
+    <div id="af-placeholder" style="background:transparent;border-color:transparent;"></div>
+  </div>
+
+  <input type="text" class="spell-input" id="spell-name" placeholder="Spell name (optional)" />
+  <button class="cast-btn" onclick="castSpell()">Cast &amp; flip</button>
+
+  <div id="resolve-panel" style="display:none" class="resolve-panel">
+    <div class="resolve-title" id="resolve-title">Resolve triggers</div>
+    <div class="outcome-banner">
+      <span class="outcome-count" id="outcome-count">0</span>
+      <span class="outcome-detail" id="outcome-detail">triggers to resolve</span>
+    </div>
+    <div class="resolve-subtitle">Pick one outcome per trigger. Original and clones can both return to hand on a loss.</div>
+    <div id="trigger-groups"></div>
+    <div class="resolve-summary" id="resolve-summary"></div>
+    <button class="confirm-btn" onclick="confirmResolve()">Confirm resolution</button>
+  </div>
+
+  <div class="ctrl-row">
+    <button class="ctrl-btn" onclick="newTurn()">New turn</button>
+    <button class="ctrl-btn" onclick="resetAll()">Reset game</button>
+  </div>
+
+  <div class="sec-label">Spell log</div>
+  <div class="log-wrap">
+    <div id="log-empty" class="empty-log">Cast a spell to start tracking</div>
+    <table class="log-table" id="log-table" style="display:none">
+      <thead>
+        <tr>
+          <th style="width:50px">T/S</th>
+          <th>Spell</th>
+          <th>Outcomes</th>
+          <th class="r" style="width:80px">Copies</th>
+          <th class="r" style="width:46px">Hand</th>
+          <th class="r" style="width:52px">Glbl</th>
+          <th class="r" style="width:52px">Tgt</th>
+        </tr>
+      </thead>
+      <tbody id="log-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const S={clones:0,thumbs:0,staff:0,storm:0,copies:0,hand:0,flipsWon:0,flipsTotal:0,turn:1,totalGlobal:0,totalTarget:0,lifeThisTurn:0};
+let pending=null;
+
+function adj(k,d){S[k]=Math.max(0,S[k]+d);document.getElementById(k+'-val').textContent=S[k];}
+function updateKrarkUI(){document.getElementById('krark-opts').style.display=document.getElementById('tog-krark').checked?'':'none';}
+function flipCoin(){return Math.random()<0.5;}
+
+function updatePWUI(){
+  const on=document.getElementById('tog-pw').checked;
+  const h=document.getElementById('pw-hint');
+  if(on){h.style.display='block';h.textContent='Wellspring active — auto-resets on new turn';}
+  else h.style.display='none';
+}
+
+function updateRalUI(){
+  const on=document.getElementById('tog-ral2').checked;
+  const h=document.getElementById('ral2-hint');
+  if(on){h.style.display='block';h.textContent='Ral −2 active — resets after next cast';}
+  else h.style.display='none';
+}
+
+function getDmg(){
+  const g=id=>document.getElementById(id).checked;
+  const draws=parseInt(document.getElementById('nf-draws').value)||1;
+  return{gs:g('cb-gs'),kf:g('cb-kf'),ex:g('cb-ex'),vv:g('cb-vv'),ral:g('cb-ral'),np:g('cb-np'),nf:g('cb-nf'),draws,tb:g('cb-tb'),fe:g('cb-fe')};
+}
+function red(v,d){return d.tb?v+2:v;}
+function calcGC(d){let v=0;if(d.gs)v+=red(2,d);if(d.kf)v+=red(1,d);if(d.ex)v+=red(1,d);if(d.vv)v+=red(1,d);if(d.fe)v*=3;return Math.round(v);}
+function calcTC(d){let v=0;if(d.np)v+=red(1,d);if(d.nf)v+=red(d.draws,d);if(d.fe)v*=3;return Math.round(v);}
+function calcTCP(d){let v=0;if(d.ral)v+=red(1,d);if(d.fe)v*=3;return Math.round(v);}
+
+function calcDmg(){
+  const d=getDmg();
+  const gc=calcGC(d),tc=calcTC(d),tcp=calcTCP(d);
+  document.getElementById('dmg-gc').textContent=gc;
+  document.getElementById('dmg-gcp').textContent=0;
+  document.getElementById('dmg-tc').textContent=tc;
+  document.getElementById('dmg-tcp').textContent=tcp;
+  document.getElementById('dmg-cc').textContent=gc+tc;
+  document.getElementById('dmg-ccp').textContent=tcp;
+}
+
+function castSpell(){
+  const name=document.getElementById('spell-name').value.trim()||'spell';
+  const krarkOn=document.getElementById('tog-krark').checked;
+  const tysOn=document.getElementById('tog-tys').checked;
+  const pwOn=document.getElementById('tog-pw').checked;
+  const ralOn=document.getElementById('tog-ral2').checked;
+  const afOn=document.getElementById('tog-af').checked;
+  const thumbs=S.thumbs;
+  S.storm++;
+  if(afOn) S.lifeThisTurn+=S.storm;
+
+  // Auto copies — no flip, just straight additions
+  const tysCopies=tysOn?S.storm:0;
+  const pwCopies=pwOn?1:0;
+  const ralCopies=ralOn?1:0;
+  const autoCopies=tysCopies+pwCopies+ralCopies;
+
+  // Reset one-shot toggles
+  if(pwOn){document.getElementById('tog-pw').checked=false;updatePWUI();}
+  if(ralOn){document.getElementById('tog-ral2').checked=false;updateRalUI();}
+
+  // Build triggers — only for cast triggers, no copies
+  let triggers=[];
+  if(krarkOn){
+    // True original
+    const f1=flipCoin(),f2=thumbs>0?flipCoin():null;
+    triggers.push({type:'trueOrig',label:'Original',flip1:f1,flip2:f2,copies:1+S.staff,choice:'loss'});
+    // Sakashima clones on original cast
+    for(let k=0;k<S.clones;k++){
+      const c1=flipCoin(),c2=thumbs>0?flipCoin():null;
+      triggers.push({type:'clone',label:`Clone ${k+1}`,flip1:c1,flip2:c2,copies:1+S.staff,choice:'win'});
+    }
+  }
+
+  pending={name,autoCopies,tysCopies,pwCopies,ralCopies,triggers,turn:S.turn,storm:S.storm,thumbs};
+  document.getElementById('spell-name').value='';
+
+  if(triggers.length===0){confirmResolve();return;}
+  renderResolvePanel();
+  document.getElementById('resolve-panel').style.display='block';
+  updateUI();
+}
+
+function renderResolvePanel(){
+  if(!pending)return;
+  document.getElementById('resolve-title').textContent=`Resolve: ${pending.name} (T${pending.turn}/S${pending.storm})`;
+  document.getElementById('outcome-count').textContent=pending.triggers.length;
+  document.getElementById('outcome-detail').textContent=`trigger${pending.triggers.length!==1?'s':''} to resolve`;
+
+  const container=document.getElementById('trigger-groups');
+  container.innerHTML='';
+
+  pending.triggers.forEach((t,i)=>{
+    const isTrueOrig=t.type==='trueOrig';
+    const hasThumb=pending.thumbs>0;
+    const hasWin=t.flip1||(t.flip2!==null&&t.flip2);
+    const hasLoss=(!t.flip1)||(t.flip2!==null&&!t.flip2);
+
+    const grp=document.createElement('div');
+    grp.className=`trigger-group${isTrueOrig?' is-true-orig':' is-clone'}`;
+
+    let flipDesc='';
+    if(hasThumb){
+      const r1=t.flip1?'W':'L',r2=t.flip2?'W':'L';
+      flipDesc=` <span style="font-size:11px;color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">(${r1} & ${r2})</span>`;
+    } else {
+      flipDesc=` <span style="font-size:11px;color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">(${t.flip1?'Win':'Loss'})</span>`;
+    }
+
+    grp.innerHTML=`<div class="trigger-label ${isTrueOrig?'true-orig':'clone-trig'}">${t.label}${flipDesc}</div><div class="radio-pair" id="pair-${i}"></div>`;
+    container.appendChild(grp);
+
+    const pair=grp.querySelector(`#pair-${i}`);
+
+    if(hasWin){
+      const opt=document.createElement('label');
+      opt.className='radio-opt opt-win';
+      const defWin=t.choice==='win';
+      opt.innerHTML=`<input type="radio" name="trig-${i}" value="win" ${defWin?'checked':''} onchange="pickOutcome(${i},'win')"><span class="radio-opt-label">Win → +${t.copies}cp</span>`;
+      pair.appendChild(opt);
+    }
+    if(hasLoss){
+      const opt=document.createElement('label');
+      opt.className='radio-opt opt-lose';
+      const defLoss=t.choice==='loss';
+      opt.innerHTML=`<input type="radio" name="trig-${i}" value="loss" ${defLoss?'checked':''} onchange="pickOutcome(${i},'loss')"><span class="radio-opt-label">Loss → hand</span>`;
+      pair.appendChild(opt);
+    }
+    // If only one option exists, ensure choice is set
+    if(!hasWin) pending.triggers[i].choice='loss';
+    if(!hasLoss) pending.triggers[i].choice='win';
+  });
+  updateResolveSummary();
+}
+
+function pickOutcome(i,val){
+  pending.triggers[i].choice=val;
+  updateResolveSummary();
+}
+
+function updateResolveSummary(){
+  if(!pending)return;
+  const d=getDmg();
+  let wins=0,losses=0,krarkCopies=0;
+  pending.triggers.forEach(t=>{
+    if(t.choice==='win'){wins++;krarkCopies+=t.copies;}
+    else losses++;
+  });
+  const totalCopies=pending.autoCopies+krarkCopies;
+  const gDmg=calcGC(d);
+  const tDmg=calcTC(d)+calcTCP(d)*totalCopies;
+  document.getElementById('resolve-summary').textContent=`${wins} win${wins!==1?'s':''} · ${losses} to hand · ${totalCopies} total cop${totalCopies!==1?'ies':'y'} · global ~${gDmg} · target ~${tDmg}`;
+}
+
+function confirmResolve(){
+  const d=getDmg();
+  let wins=0,losses=0,krarkCopies=0;
+  let outcomeParts=[];
+
+  if(pending&&pending.triggers.length>0){
+    pending.triggers.forEach(t=>{
+      if(t.choice==='win'){
+        wins++;krarkCopies+=t.copies;
+        outcomeParts.push(`<span class="badge win">${t.label} W+${t.copies}</span>`);
+      } else {
+        losses++;
+        outcomeParts.push(`<span class="badge lose">${t.label} →hand</span>`);
+      }
+    });
+  }
+
+  const totalCopies=(pending?pending.autoCopies:0)+krarkCopies;
+  const gDmg=calcGC(d);
+  const tDmg=calcTC(d)+calcTCP(d)*totalCopies;
+
+  S.flipsWon+=wins;
+  S.flipsTotal+=pending?pending.triggers.length:0;
+  S.copies+=totalCopies;
+  S.hand+=losses;
+  S.totalGlobal+=gDmg;
+  S.totalTarget+=tDmg;
+
+  const outcomeCell=outcomeParts.length?outcomeParts.join(' '):'<span class="tbadge">—</span>';
+  let copiesCell='<span class="tbadge">—</span>';
+  if(totalCopies>0){
+    const parts=[];
+    if(pending&&pending.ralCopies>0)parts.push(`<span class="badge ral">Ral+1</span>`);
+    if(pending&&pending.pwCopies>0)parts.push(`<span class="badge pw">PW+1</span>`);
+    if(pending&&pending.tysCopies>0)parts.push(`<span class="badge tys">TYS+${pending.tysCopies}</span>`);
+    if(krarkCopies>0)parts.push(`<span class="badge kw">K+${krarkCopies}</span>`);
+    copiesCell=parts.join('');
+  }
+  const handCell=losses>0?`<span class="badge lose">${losses}</span>`:`<span class="tbadge">—</span>`;
+  const gCell=gDmg>0?`<span class="badge gdmg">~${gDmg}</span>`:`<span class="tbadge">—</span>`;
+  const tCell=tDmg>0?`<span class="badge tdmg">~${tDmg}</span>`:`<span class="tbadge">—</span>`;
+  const name=pending?pending.name:'spell';
+  const ts=pending?`T${pending.turn}/S${pending.storm}`:`T${S.turn}/S${S.storm}`;
+
+  const tbody=document.getElementById('log-body');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="tbadge">${ts}</td><td class="sc">${name}</td><td>${outcomeCell}</td><td class="r">${copiesCell}</td><td class="r">${handCell}</td><td class="r">${gCell}</td><td class="r">${tCell}</td>`;
+  tbody.insertBefore(tr,tbody.firstChild);
+
+  pending=null;
+  document.getElementById('resolve-panel').style.display='none';
+  updateUI();
+}
+
+function newTurn(){
+  S.turn++;S.storm=0;S.lifeThisTurn=0;
+  document.getElementById('tog-pw').checked=false;updatePWUI();
+  // Ral -2 persists across turns — do NOT reset here
+  const tbody=document.getElementById('log-body');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="tbadge">—</td><td colspan="6" style="color:var(--text-3);font-size:12px">Turn ${S.turn} started — Wellspring reset</td>`;
+  tbody.insertBefore(tr,tbody.firstChild);
+  updateUI();
+}
+
+function resetAll(){
+  Object.assign(S,{storm:0,copies:0,hand:0,flipsWon:0,flipsTotal:0,turn:1,totalGlobal:0,totalTarget:0,lifeThisTurn:0});
+  pending=null;
+  document.getElementById('tog-pw').checked=false;updatePWUI();
+  document.getElementById('tog-ral2').checked=false;updateRalUI();
+  document.getElementById('resolve-panel').style.display='none';
+  document.getElementById('log-body').innerHTML='';
+  document.getElementById('log-table').style.display='none';
+  document.getElementById('log-empty').style.display='block';
+  updateUI();
+}
+
+function updateUI(){
+  document.getElementById('st-storm').textContent=S.storm;
+  document.getElementById('st-wins').textContent=`${S.flipsWon}/${S.flipsTotal}`;
+  document.getElementById('st-copies').textContent=S.copies;
+  document.getElementById('st-hand').textContent=S.hand;
+  document.getElementById('st-dmg').textContent=S.totalGlobal+S.totalTarget;
+  const afOn=document.getElementById('tog-af').checked;
+  const afStat=document.getElementById('af-stat');
+  const afPh=document.getElementById('af-placeholder');
+  if(afOn){
+    afStat.style.display='block';afPh.style.display='none';
+    document.getElementById('st-life').textContent=S.lifeThisTurn;
+    const needed=Math.max(0,50-S.lifeThisTurn);
+    const sub=document.getElementById('af-sub');
+    if(S.lifeThisTurn>=50){sub.textContent='Ready to fire!';afStat.classList.add('fire');}
+    else{sub.textContent=`need ${needed} more`;afStat.classList.remove('fire');}
+  } else{afStat.style.display='none';afPh.style.display='block';}
+  const tysOn=document.getElementById('tog-tys').checked;
+  const hint=document.getElementById('tys-hint');
+  if(tysOn&&S.storm>0){hint.style.display='block';hint.textContent=`At storm ${S.storm}, TYS adds ${S.storm} auto cop${S.storm===1?'y':'ies'} — no flip`;}
+  else hint.style.display='none';
+  const hasRows=document.getElementById('log-body').children.length>0;
+  document.getElementById('log-table').style.display=hasRows?'table':'none';
+  document.getElementById('log-empty').style.display=hasRows?'none':'block';
+  calcDmg();
+}
+updateUI();
+</script>
+</body>
+</html>
