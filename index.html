@@ -150,7 +150,7 @@ h1{font-size:20px;font-weight:600;margin-bottom:2px;}
 </head>
 <body>
 <div class="app">
-  <h1>TWO-FACE, FLIP</h1>
+  <h1>Krark &amp; Sakashima</h1>
   <p class="subtitle">Storm tracker — pick one outcome per trigger</p>
 
   <div class="sec-label">Krark setup</div>
@@ -225,11 +225,11 @@ h1{font-size:20px;font-weight:600;margin-bottom:2px;}
       <div>
         <div class="dmg-col-title targeted">Targeted — one player</div>
         <label class="cb-row"><input type="checkbox" id="cb-ral" onchange="calcDmg()"><span class="cb-lbl">Ral, Storm Conduit <span class="note">1 per copy</span></span></label>
-        <label class="cb-row"><input type="checkbox" id="cb-np" onchange="calcDmg()"><span class="cb-lbl">Niv-Mizzet, Parun <span class="note">1 per cast</span></span></label>
+        <label class="cb-row"><input type="checkbox" id="cb-np" onchange="calcDmg()"><span class="cb-lbl">Niv-Mizzet, Parun <span class="note">1 + draws per cast</span></span></label>
+        <label class="cb-row"><input type="checkbox" id="cb-nf" onchange="calcDmg()"><span class="cb-lbl">Niv-Mizzet, Firemind <span class="note">1 per draw</span></span></label>
         <div class="cb-row">
-          <input type="checkbox" id="cb-nf" onchange="calcDmg()">
-          <span class="cb-lbl">Niv-Mizzet, Firemind <span class="note">1 per draw</span></span>
-          <input type="number" id="nf-draws" min="0" max="20" value="1" class="draw-input" onchange="calcDmg()" oninput="calcDmg()">
+          <span class="cb-lbl">Spell draws <span class="note">extra cards spell draws (0 for most)</span></span>
+          <input type="number" id="nf-draws" min="0" max="20" value="0" class="draw-input" onchange="calcDmg()" oninput="calcDmg()">
         </div>
       </div>
     </div>
@@ -332,7 +332,15 @@ function getDmg(){
 }
 function red(v,d){return d.tb?v+2:v;}
 function calcGC(d){let v=0;if(d.gs)v+=red(2,d);if(d.kf)v+=red(1,d);if(d.ex)v+=red(1,d);if(d.vv)v+=red(1,d);if(d.fe)v*=3;return Math.round(v);}
-function calcTC(d){let v=0;if(d.np)v+=red(1,d);if(d.nf)v+=red(d.draws,d);if(d.fe)v*=3;return Math.round(v);}
+function calcTC(d){
+  let v=0;
+  // Niv Parun: deals 1 (its own cast-triggered draw) + spell's extra draws, per draw
+  if(d.np) v+=red(1+d.draws,d);
+  // Niv Firemind: deals damage equal to spell's extra draws only
+  if(d.nf) v+=red(d.draws,d);
+  if(d.fe) v*=3;
+  return Math.round(v);
+}
 function calcTCP(d){let v=0;if(d.ral)v+=red(1,d);if(d.fe)v*=3;return Math.round(v);}
 
 function calcDmg(){
