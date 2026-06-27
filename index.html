@@ -327,7 +327,7 @@ function updateRalUI(){
 
 function getDmg(){
   const g=id=>document.getElementById(id).checked;
-  const draws=parseInt(document.getElementById('nf-draws').value)||1;
+  const dv=parseInt(document.getElementById('nf-draws').value); const draws=isNaN(dv)?0:dv;
   return{gs:g('cb-gs'),kf:g('cb-kf'),ex:g('cb-ex'),vv:g('cb-vv'),ral:g('cb-ral'),np:g('cb-np'),nf:g('cb-nf'),draws,tb:g('cb-tb'),fe:g('cb-fe')};
 }
 function red(v,d){return d.tb?v+2:v;}
