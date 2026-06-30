@@ -71,6 +71,10 @@ h1{font-size:20px;font-weight:600;margin-bottom:2px;}
 .stat.fire .stat-val{color:var(--danger);}
 .stat-sub{font-size:11px;color:var(--text-3);margin-top:2px;}
 .stat.fire .stat-sub{color:var(--danger);font-weight:600;}
+.mana-summary{font-size:14px;font-weight:600;color:var(--accent-text);}
+.quick-mana{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.quick-mana button{flex:1;min-width:50px;padding:8px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text-2);font-size:13px;font-weight:500;cursor:pointer;}
+.quick-mana button:active{opacity:0.6;}
 .dmg-board{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
 .dmg-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
 .dmg-col-title{font-size:12px;font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
@@ -141,6 +145,7 @@ h1{font-size:20px;font-weight:600;margin-bottom:2px;}
 .badge.tys{background:var(--accent-bg);color:var(--accent-text);}
 .badge.pw{background:var(--warning-bg);color:var(--warning);}
 .badge.ral{background:var(--danger-bg);color:var(--danger);}
+.badge.birgi{background:var(--danger-bg);color:var(--danger);}
 .badge.kw{background:var(--success-bg);color:var(--success);}
 .badge.gdmg{background:var(--warning-bg);color:var(--warning);}
 .badge.tdmg{background:var(--danger-bg);color:var(--danger);}
@@ -150,7 +155,7 @@ h1{font-size:20px;font-weight:600;margin-bottom:2px;}
 </head>
 <body>
 <div class="app">
-  <h1>Two-Face, Left to Fate</h1>
+  <h1>Krark &amp; Sakashima</h1>
   <p class="subtitle">Storm tracker — pick one outcome per trigger</p>
 
   <div class="sec-label">Krark setup</div>
@@ -209,6 +214,40 @@ h1{font-size:20px;font-weight:600;margin-bottom:2px;}
     <div class="tog-row" style="margin-bottom:0">
       <span class="lbl">Aetherflux Reservoir <span class="note">gain life = storm count per cast</span></span>
       <label class="toggle-switch"><input type="checkbox" id="tog-af" onchange="updateUI()"><span class="toggle-track"></span></label>
+    </div>
+  </div>
+
+  <div class="sec-label">Mana pool</div>
+  <div class="card">
+    <div class="mana-summary" id="mana-summary">Floating: U 0 / R 0</div>
+    <div class="hr"></div>
+    <div class="row">
+      <span class="lbl">Blue <span class="note">U</span></span>
+      <div class="ctr">
+        <button onclick="adjMana('U',-1)">−</button>
+        <span class="ctr-val" id="manaU-val">0</span>
+        <button onclick="adjMana('U',1)">+</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="lbl">Red <span class="note">R</span></span>
+      <div class="ctr">
+        <button onclick="adjMana('R',-1)">−</button>
+        <span class="ctr-val" id="manaR-val">0</span>
+        <button onclick="adjMana('R',1)">+</button>
+      </div>
+    </div>
+    <div class="quick-mana">
+      <button onclick="addMana('U')">+U</button>
+      <button onclick="addMana('R')">+R</button>
+      <button onclick="addMana('UR')">+UR</button>
+      <button onclick="addMana('RR')">+RR</button>
+      <button onclick="clearMana()">Clear</button>
+    </div>
+    <div class="hr"></div>
+    <div class="tog-row" style="margin-bottom:0">
+      <span class="lbl">Birgi, God of Storytelling <span class="note">adds R on each cast (not copies)</span></span>
+      <label class="toggle-switch"><input type="checkbox" id="tog-birgi"><span class="toggle-track"></span></label>
     </div>
   </div>
 
@@ -304,12 +343,29 @@ h1{font-size:20px;font-weight:600;margin-bottom:2px;}
 </div>
 
 <script>
-const S={clones:0,thumbs:0,staff:0,storm:0,copies:0,hand:0,flipsWon:0,flipsTotal:0,turn:1,totalGlobal:0,totalTarget:0,lifeThisTurn:0};
+const S={clones:0,thumbs:0,staff:0,storm:0,copies:0,hand:0,flipsWon:0,flipsTotal:0,turn:1,totalGlobal:0,totalTarget:0,lifeThisTurn:0,manaU:0,manaR:0};
 let pending=null;
 
 function adj(k,d){S[k]=Math.max(0,S[k]+d);document.getElementById(k+'-val').textContent=S[k];}
 function updateKrarkUI(){document.getElementById('krark-opts').style.display=document.getElementById('tog-krark').checked?'':'none';}
 function flipCoin(){return Math.random()<0.5;}
+
+function adjMana(color,delta){
+  const key='mana'+color;
+  S[key]=Math.max(0,S[key]+delta);
+  updateUI();
+}
+function addMana(str){
+  for(const ch of str){
+    if(ch==='U') S.manaU++;
+    else if(ch==='R') S.manaR++;
+  }
+  updateUI();
+}
+function clearMana(){
+  S.manaU=0;S.manaR=0;
+  updateUI();
+}
 
 function updatePWUI(){
   const on=document.getElementById('tog-pw').checked;
@@ -364,6 +420,8 @@ function castSpell(){
   const thumbs=S.thumbs;
   S.storm++;
   if(afOn) S.lifeThisTurn+=S.storm;
+  const birgiOn=document.getElementById('tog-birgi')?.checked;
+  if(birgiOn) S.manaR++;
 
   // Auto copies — no flip, just straight additions
   const tysCopies=tysOn?S.storm:0;
@@ -388,7 +446,7 @@ function castSpell(){
     }
   }
 
-  pending={name,autoCopies,tysCopies,pwCopies,ralCopies,triggers,turn:S.turn,storm:S.storm,thumbs};
+  pending={name,autoCopies,tysCopies,pwCopies,ralCopies,triggers,turn:S.turn,storm:S.storm,thumbs,birgi:birgiOn};
   document.getElementById('spell-name').value='';
 
   if(triggers.length===0){confirmResolve();return;}
@@ -496,6 +554,7 @@ function confirmResolve(){
   S.totalGlobal+=gDmg;
   S.totalTarget+=tDmg;
 
+  if(pending&&pending.birgi)outcomeParts.push(`<span class="badge birgi">Birgi +R</span>`);
   const outcomeCell=outcomeParts.length?outcomeParts.join(' '):'<span class="tbadge">—</span>';
   let copiesCell='<span class="tbadge">—</span>';
   if(totalCopies>0){
@@ -525,19 +584,21 @@ function confirmResolve(){
 function newTurn(){
   S.turn++;S.storm=0;S.lifeThisTurn=0;
   document.getElementById('tog-pw').checked=false;updatePWUI();
+  S.manaU=0;S.manaR=0;
   // Ral -2 persists across turns — do NOT reset here
   const tbody=document.getElementById('log-body');
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td class="tbadge">—</td><td colspan="6" style="color:var(--text-3);font-size:12px">Turn ${S.turn} started — Wellspring reset</td>`;
+  tr.innerHTML=`<td class="tbadge">—</td><td colspan="6" style="color:var(--text-3);font-size:12px">Turn ${S.turn} started — Wellspring reset, mana cleared</td>`;
   tbody.insertBefore(tr,tbody.firstChild);
   updateUI();
 }
 
 function resetAll(){
-  Object.assign(S,{storm:0,copies:0,hand:0,flipsWon:0,flipsTotal:0,turn:1,totalGlobal:0,totalTarget:0,lifeThisTurn:0});
+  Object.assign(S,{storm:0,copies:0,hand:0,flipsWon:0,flipsTotal:0,turn:1,totalGlobal:0,totalTarget:0,lifeThisTurn:0,manaU:0,manaR:0});
   pending=null;
   document.getElementById('tog-pw').checked=false;updatePWUI();
   document.getElementById('tog-ral2').checked=false;updateRalUI();
+  const bb=document.getElementById('tog-birgi');if(bb)bb.checked=false;
   document.getElementById('resolve-panel').style.display='none';
   document.getElementById('log-body').innerHTML='';
   document.getElementById('log-table').style.display='none';
@@ -546,6 +607,9 @@ function resetAll(){
 }
 
 function updateUI(){
+  document.getElementById('manaU-val').textContent=S.manaU;
+  document.getElementById('manaR-val').textContent=S.manaR;
+  document.getElementById('mana-summary').textContent=`Floating: U ${S.manaU} / R ${S.manaR}`;
   document.getElementById('st-storm').textContent=S.storm;
   document.getElementById('st-wins').textContent=`${S.flipsWon}/${S.flipsTotal}`;
   document.getElementById('st-copies').textContent=S.copies;
